@@ -100,16 +100,6 @@ The project includes three types of tests:
 npm run test:unit
 ```
 
-2. **Integration Tests**
-```bash
-npm run test:integration
-```
-
-3. **End-to-End Tests**
-```bash
-npm run test:e2e
-```
-
 To run all tests with coverage:
 ```bash
 npm run test
