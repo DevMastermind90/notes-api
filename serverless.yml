@@ -1,0 +1,79 @@
+service: notes-api
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: ${opt:stage, 'local'}
+  environment:
+    NOTES_TABLE: ${env:NOTES_TABLE}-${self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:GetItem
+        - dynamodb:Scan
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource:
+        - arn:aws:dynamodb:${self:provider.region}:*:table/${env:NOTES_TABLE}-${self:provider.stage}
+
+functions:
+  createNote:
+    handler: src/functions/createNote.handler
+    events:
+      - http:
+          path: notes
+          method: post
+          cors: true
+
+  getNote:
+    handler: src/functions/getNote.handler
+    events:
+      - http:
+          path: notes/{id}
+          method: get
+          cors: true
+
+  getAllNotes:
+    handler: src/functions/getAllNotes.handler
+    events:
+      - http:
+          path: notes
+          method: get
+          cors: true
+
+  updateNote:
+    handler: src/functions/updateNote.handler
+    events:
+      - http:
+          path: notes/{id}
+          method: put
+          cors: true
+
+  deleteNote:
+    handler: src/functions/deleteNote.handler
+    events:
+      - http:
+          path: notes/{id}
+          method: delete
+          cors: true
+
+resources:
+  Resources:
+    NotesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${env:NOTES_TABLE}-${self:provider.stage}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+plugins:
+  - serverless-offline
